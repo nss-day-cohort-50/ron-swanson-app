@@ -6,6 +6,8 @@ export const App = () => {
   const [breads, updateBreads] = useState([])
   const [meats, changeMeats] = useState([])
   const [toppings, syncToppings] = useState([])
+  const [ orders, populateOrders ] = useState([])
+  const [ order, updateOrder ] = useState({})
   const [chosenOptions, updateOptions] = useState({
     bread: "NaN",
     meat: "Null",
@@ -19,6 +21,15 @@ export const App = () => {
     },
     [toppings]
   )
+
+  const orderFetcher = () => {
+    fetch(`http://localhost:8088/orders?_expand=bread&_expand=meat&_expand=topping`)
+        .then(response => response.json())
+        .then((data) => {
+          console.log("Got orders response from API")
+          populateOrders(data)
+        })
+  }
 
   useEffect(
     () => {
@@ -42,6 +53,8 @@ export const App = () => {
           console.log("Got meats response from API")
           changeMeats(apiMeatData)
         })
+
+        orderFetcher()
     },
     []
   )
@@ -68,6 +81,12 @@ export const App = () => {
     [meats]
   )
 
+  const buildOrderObject = (idToModify, neueValue) => {
+    const newOrder = {...order}
+    newOrder[idToModify] = neueValue
+    updateOrder(newOrder)
+  }
+
   const updateOrderState = (propToModify, newValue) => {
     const newObject = { ...chosenOptions }  // Copy of state
     newObject[propToModify] = newValue
@@ -86,7 +105,12 @@ export const App = () => {
           {
             breads.map(
               (breadObject) => <button
-                onClick={() => updateOrderState("bread", breadObject.type)}
+                onClick={
+                  () => {
+                    updateOrderState("bread", breadObject.type)
+                    buildOrderObject("breadId", breadObject.id)
+                  }
+                }
                 key={`bread--${breadObject.id}`}>
                 {breadObject.type}
               </button>
@@ -98,7 +122,10 @@ export const App = () => {
           {
             meats.map(
               (meatObject) => <button
-                onClick={() => updateOrderState("meat", meatObject.type)}
+                onClick={() => {
+                  updateOrderState("meat", meatObject.type)
+                  buildOrderObject("meatId", meatObject.id)
+                }}
                 key={`meat--${meatObject.id}`}>
                 {meatObject.type}
               </button>
@@ -106,7 +133,7 @@ export const App = () => {
           }
         </article>
 
-        <Toppings toppingsCollection={toppings} updateFunction={updateOrderState} />
+        <Toppings toppingsCollection={toppings} createFunc={buildOrderObject} updateFunction={updateOrderState} />
       </main>
 
       <article>
@@ -114,6 +141,34 @@ export const App = () => {
         <p>Bread: {chosenOptions.bread}</p>
         <p>Meat: {chosenOptions.meat}</p>
         <p>Topping: {chosenOptions.topping}</p>
+      </article>
+
+      <button onClick={
+        () => {
+          const fetchOptions = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(order)
+          }
+
+          fetch(`http://localhost:8088/orders`, fetchOptions)
+            .then(() => {
+              orderFetcher()
+            })
+        }
+      }>Place Order</button>
+
+      <h2>All Orders</h2>
+      <article className="orderList">
+        {
+          orders.map(order => {
+            return <div>
+              Order #{order.id}: {order.bread.type} {order.meat.type} {order.topping.name} sandwich
+            </div>
+          })
+        }
       </article>
     </>
   );
