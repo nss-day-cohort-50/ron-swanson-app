@@ -6,12 +6,13 @@ export const App = () => {
   const [breads, updateBreads] = useState([])
   const [meats, changeMeats] = useState([])
   const [toppings, syncToppings] = useState([])
-  const [ orders, populateOrders ] = useState([])
-  const [ order, updateOrder ] = useState({})
+  const [orders, populateOrders] = useState([])
+  const [order, updateOrder] = useState({})
+  const [monthlySales, addSales] = useState(0)
   const [chosenOptions, updateOptions] = useState({
-    bread: "NaN",
-    meat: "Null",
-    topping: "Undefined"
+    bread: "foo",
+    meat: "bar",
+    topping: "chickenMonkey"
   })
 
 
@@ -22,13 +23,46 @@ export const App = () => {
     [toppings]
   )
 
+  useEffect(
+    () => {
+      // REDUCE IT
+      const costOfAllOrders = orders.reduce(
+        (sum, currentOrder) => {
+          const combination = JSON.stringify({
+            breadId: currentOrder.breadId,
+            meatId: currentOrder.meatId,
+            toppingId: currentOrder.toppingId
+          })
+
+          if (sum.has(combination)) {
+            let foundCombo = sum.get(combination)
+            foundCombo++
+            sum.set(combination, foundCombo)
+          }
+          else {
+            sum.set( combination, 1 )
+          }
+
+          return sum
+        }
+        , new Map()
+      )
+
+      debugger
+
+      addSales(1)
+
+    },
+    [orders]
+  )
+
   const orderFetcher = () => {
     fetch(`http://localhost:8088/orders?_expand=bread&_expand=meat&_expand=topping`)
-        .then(response => response.json())
-        .then((data) => {
-          console.log("Got orders response from API")
-          populateOrders(data)
-        })
+      .then(response => response.json())
+      .then((data) => {
+        console.log("Got orders response from API")
+        populateOrders(data)
+      })
   }
 
   useEffect(
@@ -54,7 +88,7 @@ export const App = () => {
           changeMeats(apiMeatData)
         })
 
-        orderFetcher()
+      orderFetcher()
     },
     []
   )
@@ -82,7 +116,7 @@ export const App = () => {
   )
 
   const buildOrderObject = (idToModify, neueValue) => {
-    const newOrder = {...order}
+    const newOrder = { ...order }
     newOrder[idToModify] = neueValue
     updateOrder(newOrder)
   }
@@ -161,11 +195,15 @@ export const App = () => {
       }>Place Order</button>
 
       <h2>All Orders</h2>
+
+      <div>🚀🚀🚀🚀🚀🚀 Monthly sales: 💲{ monthlySales.toFixed(2) }</div>
       <article className="orderList">
         {
           orders.map(order => {
             return <div>
-              Order #{order.id}: {order.bread.type} {order.meat.type} {order.topping.name} sandwich
+              Order #{order.id}:
+              {order.bread.type} {order.meat.type} {order.topping.name} sandwich
+              costs ${(order.bread.price + order.meat.price + order.topping.price).toFixed(2)}
             </div>
           })
         }
