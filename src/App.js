@@ -28,6 +28,18 @@ export const App = () => {
       // REDUCE IT
       const costOfAllOrders = orders.reduce(
         (sum, currentOrder) => {
+          return sum + currentOrder.bread.price + currentOrder.meat.price + currentOrder.topping.price
+        }
+        , 0
+      )
+
+      addSales(costOfAllOrders)
+
+
+
+        /*
+      const costOfAllOrders = orders.reduce(
+        (sum, currentOrder) => {
           const combination = JSON.stringify({
             breadId: currentOrder.breadId,
             meatId: currentOrder.meatId,
@@ -47,10 +59,8 @@ export const App = () => {
         }
         , new Map()
       )
+        */
 
-      debugger
-
-      addSales(1)
 
     },
     [orders]
