@@ -1,38 +1,47 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import { Toppings } from './Toppings';
 
 export const App = () => {
-  const [ breads, updateBreads ] = useState([])
-  const [ meats, changeMeats ] = useState([])
-  const [ toppings, syncToppings ] = useState([])
-  const [ chosenOptions, updateOptions ] = useState({
+  const [breads, updateBreads] = useState([])
+  const [meats, changeMeats] = useState([])
+  const [toppings, syncToppings] = useState([])
+  const [chosenOptions, updateOptions] = useState({
     bread: "NaN",
     meat: "Null",
     topping: "Undefined"
   })
 
+
+  useEffect(
+    () => {
+      console.log("Toppings state changed", toppings)
+    },
+    [toppings]
+  )
+
   useEffect(
     () => {
       fetch(`http://localhost:8088/breads`)
-          .then(response => response.json())
-          .then((apiBreadData) => {
-              console.log("Got breads response from API")
-              updateBreads(apiBreadData)
-          })
-
-      fetch(`http://localhost:8088/meats`)
-          .then(response => response.json())
-          .then((apiMeatData) => {
-              console.log("Got meats response from API")
-              changeMeats(apiMeatData)
-          })
+        .then(response => response.json())
+        .then((apiBreadData) => {
+          console.log("Got breads response from API")
+          updateBreads(apiBreadData)
+        })
 
       fetch(`http://localhost:8088/toppings`)
-          .then(response => response.json())
-          .then((data) => {
-              console.log("Got toppings response from API")
-              syncToppings(data)
-          })
+        .then(response => response.json())
+        .then((data) => {
+          console.log("Got toppings response from API")
+          syncToppings(data)
+        })
+
+      fetch(`http://localhost:8088/meats`)
+        .then(response => response.json())
+        .then((apiMeatData) => {
+          console.log("Got meats response from API")
+          changeMeats(apiMeatData)
+        })
     },
     []
   )
@@ -51,12 +60,6 @@ export const App = () => {
     [breads]
   )
 
-  useEffect(
-    () => {
-      console.log("Toppings state changed", toppings)
-    },
-    [toppings]
-  )
 
   useEffect(
     () => {
@@ -65,72 +68,45 @@ export const App = () => {
     [meats]
   )
 
+  const updateOrderState = (propToModify, newValue) => {
+    const newObject = { ...chosenOptions }  // Copy of state
+    newObject[propToModify] = newValue
+    updateOptions(newObject)              // Update state with copy
+  }
+
 
   return (
     <>
-      {console.log("JSX rendered")}
+      {console.log(`JSX rendered`)}
+
       <h1>Welcome to Ron Swanson's Burgers</h1>
 
       <main className="options">
         <article className="option breads">
-        {
-          breads.map(
-            (breadObject) => {
-              return <button
-                    onClick={
-                      () => {
-                        const newObject = {...chosenOptions}  // Copy of state
-                        newObject.bread = breadObject.type    // Update the copy to look how I want
-                        updateOptions(newObject)              // Update state with copy
-                      }
-                    }
-                    key={`bread--${breadObject.id}`}>
-                { breadObject.type }
+          {
+            breads.map(
+              (breadObject) => <button
+                onClick={() => updateOrderState("bread", breadObject.type)}
+                key={`bread--${breadObject.id}`}>
+                {breadObject.type}
               </button>
-            }
-          )
-        }
+            )
+          }
         </article>
 
         <article className="option meats">
-        {
-          meats.map(
-            (meatObject) => {
-              return <button
-                  onClick={
-                    () => {
-                      const newObject = {...chosenOptions}  // Copy of state
-                      newObject.meat = meatObject.type    // Update the copy to look how I want
-                      updateOptions(newObject)              // Update state with copy
-                    }
-                  }
-                  key={`meat--${meatObject.id}`}>
-                { meatObject.type }
+          {
+            meats.map(
+              (meatObject) => <button
+                onClick={() => updateOrderState("meat", meatObject.type)}
+                key={`meat--${meatObject.id}`}>
+                {meatObject.type}
               </button>
-            }
-          )
-        }
+            )
+          }
         </article>
 
-        <article className="option toppings">
-        {
-          toppings.map(
-            (topping) => {
-              return <button
-                onClick={
-                  () => {
-                    const newObject = {...chosenOptions}  // Copy of state
-                    newObject.topping = topping.name    // Update the copy to look how I want
-                    updateOptions(newObject)              // Update state with copy
-                  }
-                }
-                key={`topping--${topping.id}`}>
-                { topping.name }
-              </button>
-            }
-          )
-        }
-        </article>
+        <Toppings toppingsCollection={toppings} updateFunction={updateOrderState} />
       </main>
 
       <article>
