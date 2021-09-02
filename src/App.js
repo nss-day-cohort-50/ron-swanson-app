@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import './App.css';
 import { Toppings } from './Toppings';
+import './App.css';
 
 export const App = () => {
   const [breads, updateBreads] = useState([])
@@ -34,34 +34,6 @@ export const App = () => {
       )
 
       addSales(costOfAllOrders)
-
-
-
-        /*
-      const costOfAllOrders = orders.reduce(
-        (sum, currentOrder) => {
-          const combination = JSON.stringify({
-            breadId: currentOrder.breadId,
-            meatId: currentOrder.meatId,
-            toppingId: currentOrder.toppingId
-          })
-
-          if (sum.has(combination)) {
-            let foundCombo = sum.get(combination)
-            foundCombo++
-            sum.set(combination, foundCombo)
-          }
-          else {
-            sum.set( combination, 1 )
-          }
-
-          return sum
-        }
-        , new Map()
-      )
-        */
-
-
     },
     [orders]
   )
